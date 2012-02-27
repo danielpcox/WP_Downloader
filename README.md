@@ -10,7 +10,7 @@ Tasks:
   thor wp:view [SECTION_LETTER]  # Views a downloaded 'Washington Post' section
 
 Downloading
-===========
+-----------
 
 > Usage:
 >   thor wp:download
@@ -26,7 +26,7 @@ Downloading
 > Downloads and assembles the 'Washington Post.'
 
 Viewing
-=======
+-------
 
 > Usage:
 >   thor wp:view [SECTION_LETTER]
@@ -42,7 +42,7 @@ Viewing
 > Views a downloaded 'Washington Post' section
 
 Cleaning
-========
+--------
 
 > Usage:
 >   thor wp:clean
