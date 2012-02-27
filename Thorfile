@@ -1,11 +1,12 @@
 require 'open-uri'
 require 'nokogiri'
+require 'date'
 
 class WP < Thor
-  desc "download", "Downloads and assembles the Washington Post."
-  class_option :date, :default => Time.now.strftime("%Y-%m-%d"), :banner => "YYYY-MM-DD", :desc => "date of paper to download (older than 2 weeks unavailable by WP policy)"
-  class_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
-  class_option :omit, :default => "D", :banner => "A,B,...", :desc => "sections to omit"
+  desc "download", "Downloads and assembles the 'Washington Post.'"
+  method_option :date, :default => Time.now.strftime("%Y-%m-%d"), :banner => "YYYY-MM-DD", :desc => "date of paper to download (older than 2 weeks unavailable by WP policy)"
+  method_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
+  method_option :omit, :default => "D", :banner => "A,B,...", :desc => "sections to omit"
   def download
     root = File.expand_path(options[:location])
 
@@ -17,10 +18,10 @@ class WP < Thor
       exit 7
     end
 
-    omit_list = options[:omit].split(/, ?/).map(&:upcase).sort
+    omit_list = options[:omit] ? options[:omit].split(/, ?/).map(&:upcase).sort : []
     sections_to_get = %w(A B C D) - omit_list
     
-    puts "Fetching today's paper..."
+    puts "Fetching paper..."
 
     sections_to_get.each do |section|
       file = open("http://www.washingtonpost.com/todays_paper?dt=#{date}&bk=#{section}&pg=1")
@@ -77,5 +78,49 @@ class WP < Thor
       end
     end
     puts "Done!"
+  end
+
+  desc "view [SECTION_LETTER]", "Views a downloaded 'Washington Post'"
+  method_option :viewer, :default => "evince"
+  method_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
+  method_option :date, :default => Time.now.strftime("%Y-%m-%d"), :banner => "YYYY-MM-DD", :desc => "date of paper to view"
+  def view(section_letter = 'A')
+    root = File.expand_path(options[:location])
+    section = section_letter.upcase
+    unless %w(A B C D).include?(section)
+      puts %Q(ERROR: Invalid section letter "#{section_letter}")
+      exit 9
+    end
+    # parse date
+    begin
+      date = Date.parse(options[:date]).to_s
+    rescue
+      puts "ERROR: Specified date is incorrectly formatted"
+      exit 7
+    end
+
+    section_path = File.join(root, date, "#{section}_section.pdf")
+    view_command = %Q(#{options[:viewer]} #{section_path})
+    unless File.exist?(section_path)
+      puts "Selected paper does not appear to exist. Download it? [y/N]"
+      response = STDIN.gets.chomp
+      if %w(y Y yes Yes YES).include?(response)
+        invoke :download, [], options
+      else
+        exit 0
+      end
+    end
+
+    unless system(view_command)
+      puts %Q(ERROR: View command failed: "#{view_command}")
+      exit 8
+    end
+  end
+  desc "opts", "shows the options"
+  method_option :date, :default => Time.now.strftime("%Y-%m-%d"), :banner => "YYYY-MM-DD", :desc => "date of paper to download (older than 2 weeks unavailable by WP policy)"
+  method_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
+  method_option :omit, :default => "D", :banner => "A,B,...", :desc => "sections to omit"
+  def opts
+    puts options
   end
 end
