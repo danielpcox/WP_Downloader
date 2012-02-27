@@ -80,7 +80,7 @@ class WP < Thor
     puts "Done!"
   end
 
-  desc "view [SECTION_LETTER]", "Views a downloaded 'Washington Post'"
+  desc "view [SECTION_LETTER]", "Views a downloaded 'Washington Post' section"
   method_option :viewer, :default => "evince"
   method_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
   method_option :date, :default => Time.now.strftime("%Y-%m-%d"), :banner => "YYYY-MM-DD", :desc => "date of paper to view"
@@ -116,11 +116,21 @@ class WP < Thor
       exit 8
     end
   end
-  desc "opts", "shows the options"
-  method_option :date, :default => Time.now.strftime("%Y-%m-%d"), :banner => "YYYY-MM-DD", :desc => "date of paper to download (older than 2 weeks unavailable by WP policy)"
+  desc "clean", "Removes all but today's paper from the local paper repository"
   method_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
-  method_option :omit, :default => "D", :banner => "A,B,...", :desc => "sections to omit"
-  def opts
-    puts options
+  def clean
+    root = File.expand_path(options[:location])
+    Dir.entries(root).each do |entry|
+      date = Date.parse(entry) rescue next
+      next if date == Date.today
+      entry_path = File.join(root, entry)
+      rm_command = %Q(rm -rf #{entry_path})
+      if system(rm_command)
+        puts %Q(Removed #{entry} paper from #{options[:location]})
+      else
+        puts %Q(ERROR: Command failed: "#{rm_command}")
+        exit 9
+      end
+    end
   end
 end
