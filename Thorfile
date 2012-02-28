@@ -10,13 +10,7 @@ class WP < Thor
   def download
     root = File.expand_path(options[:location])
 
-    # parse date
-    begin
-      date = Date.parse(options[:date]).to_s
-    rescue
-      puts "ERROR: Specified date is incorrectly formatted"
-      exit 7
-    end
+    date = parse_date
 
     omit_list = options[:omit] ? options[:omit].split(/, ?/).map(&:upcase).sort : []
     sections_to_get = %w(A B C D) - omit_list
@@ -91,13 +85,7 @@ class WP < Thor
       puts %Q(ERROR: Invalid section letter "#{section_letter}")
       exit 9
     end
-    # parse date
-    begin
-      date = Date.parse(options[:date]).to_s
-    rescue
-      puts "ERROR: Specified date is incorrectly formatted"
-      exit 7
-    end
+    date = parse_date
 
     section_path = File.join(root, date, "#{section}_section.pdf")
     unless File.exist?(section_path)
@@ -131,6 +119,17 @@ class WP < Thor
         puts %Q(ERROR: Command failed: "#{rm_command}")
         exit 9
       end
+    end
+  end
+
+  private
+
+  def parse_date
+    begin
+      return Date.parse(options[:date]).to_s
+    rescue
+      puts "ERROR: Specified date is incorrectly formatted"
+      exit 7
     end
   end
 end
