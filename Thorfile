@@ -81,7 +81,7 @@ class WP < Thor
   end
 
   desc "view [SECTION_LETTER]", "Views a downloaded 'Washington Post' section"
-  method_option :viewer, :default => "evince"
+  method_option :viewer, :default => "evince 2>/dev/null"
   method_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
   method_option :date, :default => Time.now.strftime("%Y-%m-%d"), :banner => "YYYY-MM-DD", :desc => "date of paper to view"
   def view(section_letter = 'A')
@@ -100,7 +100,6 @@ class WP < Thor
     end
 
     section_path = File.join(root, date, "#{section}_section.pdf")
-    view_command = %Q(#{options[:viewer]} #{section_path})
     unless File.exist?(section_path)
       puts "Selected paper does not appear to exist. Download it? [y/N]"
       response = STDIN.gets.chomp
@@ -111,6 +110,7 @@ class WP < Thor
       end
     end
 
+    view_command = %Q(#{options[:viewer]} #{section_path} &)
     unless system(view_command)
       puts %Q(ERROR: View command failed: "#{view_command}")
       exit 8
