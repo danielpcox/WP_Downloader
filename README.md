@@ -9,6 +9,13 @@ Thor script (and my original vanilla Ruby script) for downloading the 'Washingto
       thor wp:help [TASK]            # Describe available tasks or one specific task
       thor wp:view [SECTION_LETTER]  # Views a downloaded 'Washington Post' section
 
+Installation
+------------
+
+    git clone https://danielpcox@github.com/danielpcox/WP_Downloader.git
+    cd WP_Downloader
+    thor install --as=wp   # confirm when prompted
+
 Downloading
 -----------
 
