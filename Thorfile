@@ -8,16 +8,16 @@ class WP < Thor
   method_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
   method_option :omit, :default => "D", :banner => "A,B,...", :desc => "sections to omit"
   def download
+    # parse options
     root = File.expand_path(options[:location])
-
     date = parse_date
-
     omit_list = options[:omit] ? options[:omit].split(/, ?/).map(&:upcase).sort : []
     sections_to_get = %w(A B C D) - omit_list
     
     puts "Fetching paper..."
 
     sections_to_get.each do |section|
+      # use nokogiri to get the number of pages for section
       file = open("http://www.washingtonpost.com/todays_paper?dt=#{date}&bk=#{section}&pg=1")
       doc = Nokogiri::HTML(file)
       num_pages = doc.css("li.last a").first.content.to_i
@@ -28,6 +28,7 @@ class WP < Thor
         exit 1
       end
 
+      # make temporary directory for a section's pages
       section_dir = File.join(root, date, section)
       unless system(%Q(mkdir -p #{section_dir}))
         puts %Q(ERROR: Unable to make directory "#{section_dir}")
@@ -79,6 +80,7 @@ class WP < Thor
   method_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
   method_option :date, :default => Time.now.strftime("%Y-%m-%d"), :banner => "YYYY-MM-DD", :desc => "date of paper to view"
   def view(section_letter = 'A')
+    # parse options
     root = File.expand_path(options[:location])
     section = section_letter.upcase
     unless %w(A B C D).include?(section)
@@ -86,8 +88,9 @@ class WP < Thor
       exit 9
     end
     date = parse_date
-
     section_path = File.join(root, date, "#{section}_section.pdf")
+
+    # check for paper and prompt to download
     unless File.exist?(section_path)
       puts "Selected paper does not appear to exist. Download it? [y/N]"
       response = STDIN.gets.chomp
@@ -98,16 +101,21 @@ class WP < Thor
       end
     end
 
+    # execute viewer on paper
     view_command = %Q(#{options[:viewer]} #{section_path} &)
     unless system(view_command)
       puts %Q(ERROR: View command failed: "#{view_command}")
       exit 8
     end
   end
+
   desc "clean", "Removes all but today's paper from the local paper repository"
   method_option :location, :default => "~/.washingtonpost/", :banner => "/path/to/repo", :desc => "path to local paper repository"
   def clean
+    # parse option
     root = File.expand_path(options[:location])
+
+    # foreach entry in the repo location, if date != today, delete it
     Dir.entries(root).each do |entry|
       date = Date.parse(entry) rescue next
       next if date == Date.today
