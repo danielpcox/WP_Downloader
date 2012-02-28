@@ -14,7 +14,7 @@ class WP < Thor
     omit_list = options[:omit] ? options[:omit].split(/, ?/).map(&:upcase).sort : []
     sections_to_get = %w(A B C D) - omit_list
     
-    puts "Fetching paper..."
+    puts "Fetching paper for #{date}..."
 
     sections_to_get.each do |section|
       # use nokogiri to get the number of pages for section
