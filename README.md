@@ -12,7 +12,7 @@ Thor script (and my original vanilla Ruby script) for downloading the 'Washingto
 Installation
 ------------
 
-    git clone https://danielpcox@github.com/danielpcox/WP_Downloader.git
+    git clone https://github.com/danielpcox/WP_Downloader.git
     cd WP_Downloader
     thor install --as=wp   # confirm when prompted
 
