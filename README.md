@@ -1,7 +1,8 @@
 WP Downloader
 =============
 
-Thor script (and my original vanilla Ruby script) for downloading the 'Washington Post' and stitching the individual PDFs together
+Thor script (and my original vanilla Ruby script) for downloading the 'Washington Post' and stitching the individual PDFs together.
+Note that this script DOES NOT WORK anymore, since WashingtonPost has stopped providing PDFs of the pages of the daily paper. I leave it here as a nice example of Thor usage.
 
     Tasks:
       thor wp:clean                  # Removes all but today's paper from the local paper repository
